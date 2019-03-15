@@ -12,9 +12,9 @@ output: pdf_document
 ```{r Setup and Library Load, message=FALSE, warning=FALSE}
 library(tidyverse) # obvious reasons
 library(rstan) # same
-library(rstanarm) # same
 library(tidyposterior) # visuals for bayesian
 library(tidybayes) # same 
+library(bayesplot) # same
 library(coda) # bayesian diagnostics
 library(here) # working on the project together
 set.seed(314159) # For Pi-Day
@@ -99,5 +99,28 @@ fit1 <- sampling(model1, data = dat1)
 ```
 
 ```{r Evaluate fit1}
+
+```
+
+
+```{r Lasso 2 Trial - fit2 }
+# Generate a simple dataset of size (5,100,1000)
+N = 1000
+
+dataset2 <- Generate_Dataset_BL(5,100,N)
+x2 <- dataset2[[1]]
+y2 <- dataset2[[2]]$V1
+betas2 <- dataset2[[3]]
+
+# Create data list for stan:
+dat2 <- list(N = N, K = ncol(x2), y = y2, X = x2)
+
+# Fit Stan model:
+model2 <- stan_model(file = "Lasso1.stan")
+
+fit2 <- sampling(model2, data = dat2)
+```
+
+```{r Evaluate fit2}
 
 ```

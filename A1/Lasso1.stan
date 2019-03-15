@@ -6,8 +6,10 @@ data {
 }
 
 parameters {
+	
   vector[K] beta;								// Vector of Parameters
   real<lower=0> sigma;							// Error Scale
+
 }
 
 model {
