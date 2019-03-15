@@ -1,0 +1,83 @@
+---
+title: "Bayesian Lasso"
+author: "Michal Malyska, Alin Morariu, Shawn Unger"
+output: pdf_document
+---
+
+\null \newpage
+\tableofcontents
+\null \newpage
+
+
+```{r Setup and Library Load, message=FALSE, warning=FALSE}
+library(tidyverse) # obvious reasons
+library(rstan) # same
+library(rstanarm) # same
+library(tidyposterior) # visuals for bayesian
+library(tidybayes) # same 
+library(here) # working on the project together
+```
+
+# Data Generating Function
+
+```{r Data Generator}
+
+Generate_Dataset_BL <- function(num_predictors, num_noise, dataset_size, distribution = "Normal") {
+	# Generates a dataset of length dataset_size from num_predictors predictors sampled
+	# from one of the specified distributions with preset params. Adds num_noise of 
+	# redundant dimensions to data. Returns a dataset, betas.
+	
+	### Generate the Betas:
+	if (distribution == "Normal") {
+		betas <- rnorm(num_predictors)
+	}
+	else if (distribution == "Exponential") {
+		betas <- rexp(num_predictors)
+	}
+	else if (distribution == "t") {
+		betas <- rt(num_predictors, 2)
+	}
+	else if (distribution == "Cauchy") {
+		betas <- rcauchy(num_predictors)
+	}
+	else if (distribution == "Uniform") {
+		betas <- runif(num_predictors)
+	}
+	else {
+		stop("Invalid Distribution")
+	}
+	
+	### Generate the sample x's 
+	
+	# Total number of real x's to sample
+	num_real_x <- num_predictors * dataset_size
+	real_x <- rnorm(num_real_x)
+	
+	# Convert to a matrix and then save as a tibble:
+	real_x_mat <- matrix(real_x, ncol = num_predictors)
+	
+	# Compute real y's
+	real_y <- real_x_mat %*% betas
+	noisy_y <- real_y + rnorm(dataset_size, sd = 0.1)
+	
+	# Sample Noise x's 
+	num_noise_x <- num_noise * dataset_size
+	noise_x <- rnorm(num_noise_x)
+	noise_x_mat <- matrix(noise_x, ncol = num_noise)
+	
+	# Combine into data:
+	real_x_df <- as_tibble(real_x_mat)
+	noise_x_df <- as_tibble(noise_x_mat)
+	noisy_y_df <- as_tibble(noisy_y)
+	combined_x <- bind_cols(real_x_df, noise_x_df)
+	names(combined_x) <- paste0('x', 1:(ncol(combined_x)))
+	combined_data <- bind_cols(noisy_y_df, combined_x) %>%
+		rename(y = V1)
+	
+	# Standardize
+	
+	final_data <- combined_data
+	# Return
+	return(list(final_data, betas))
+}
+```
