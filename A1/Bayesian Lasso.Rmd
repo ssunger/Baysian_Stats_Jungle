@@ -74,9 +74,6 @@ Generate_Dataset_BL <- function(num_predictors, num_noise, dataset_size, distrib
 	combined_data <- bind_cols(noisy_y_df, combined_x) %>%
 		rename(y = V1)
 	
-	# Standardize
-	
-	final_data <- combined_data
 	# Return
 	return(list(final_data, betas))
 }
