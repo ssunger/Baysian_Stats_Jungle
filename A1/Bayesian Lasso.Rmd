@@ -112,15 +112,25 @@ x2 <- dataset2[[1]]
 y2 <- dataset2[[2]]$V1
 betas2 <- dataset2[[3]]
 
-# Create data list for stan:
-dat2 <- list(N = N, K = ncol(x2), y = y2, X = x2)
-
 # Fit Stan model:
-model2 <- stan_model(file = "Lasso1.stan")
-
-fit2 <- sampling(model2, data = dat2)
+fit2 <- stan(file = "Lasso1.stan",
+			 data = list(N = N,
+			 			K = ncol(x2),
+			 			y = y2,
+			 			X = x2),
+			 chains = 5,
+			 iter = 10000,
+			 warmup = 2000,
+			 thin = 10)
 ```
 
 ```{r Evaluate fit2}
+posterior2 <- extract(fit2, inc_warmup = TRUE, permuted = FALSE)
 
+color_scheme_set("red")
+betas <- paste0('beta[', 1:105,']')
+
+mcmc_areas(posterior2,
+           pars = betas,
+           prob = 0.8)
 ```
