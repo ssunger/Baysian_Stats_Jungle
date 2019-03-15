@@ -133,4 +133,5 @@ betas <- paste0('beta[', 1:105,']')
 mcmc_areas(posterior2,
            pars = betas,
            prob = 0.8)
+
 ```
