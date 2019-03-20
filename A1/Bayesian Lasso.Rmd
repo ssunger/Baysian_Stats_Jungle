@@ -93,13 +93,17 @@ betas1 <- dataset1[[3]]
 dat1 <- list(N = N, K = ncol(x1), y = y1, X = x1)
 
 # Fit Stan model:
-model1 <- stan_model(file = "Lasso1.stan")
-
-fit1 <- sampling(model1, data = dat1)
+fit1 <- stan(file = "Lasso1.stan",
+			 data = list(
+			 	N = N,
+			 	K = 15,
+			 	y = y1,
+			 	X = x1
+			 ))
 ```
 
 ```{r Evaluate fit1}
-
+check_hmc_diagnostics(fit1)
 ```
 
 
@@ -125,6 +129,8 @@ fit2 <- stan(file = "Lasso1.stan",
 ```
 
 ```{r Evaluate fit2}
+check_hmc_diagnostics(fit2)
+
 posterior2 <- extract(fit2, inc_warmup = TRUE, permuted = FALSE)
 
 color_scheme_set("red")
@@ -133,5 +139,5 @@ betas <- paste0('beta[', 1:105,']')
 mcmc_areas(posterior2,
            pars = betas,
            prob = 0.8)
-
+print(fit2)
 ```
