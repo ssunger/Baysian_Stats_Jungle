@@ -1,0 +1,97 @@
+---
+title: "Epsilon Analysis"
+author: "Michal Malyska"
+date: "24/03/2019"
+output: html_document
+---
+```{r setup}
+library(tidyverse) # obvious reasons
+library(rstan) # same
+library(rstanarm) # same
+library(tidyposterior) # visuals for bayesian
+library(tidybayes) # same 
+library(coda) # bayesian diagnostics
+library(here) # working on the project together
+set.seed(314159) # For Pi-Day
+load("results_list.Rdata")
+
+# Helpers
+maxN <- function(x, N = 2){
+    len <- length(x)
+    if (N > len) {
+        warning('N greater than length(x).  Setting N=length(x)')
+        N <- length(x)
+    }
+    sort(x, partial = (len - N + 1))[len - N + 1]
+}
+```
+
+
+```{r Epsilon analysis}
+# Can you distinguish between the good and the bad betas?
+run_results_summary <- tibble(run = 0, m = 0, k = 0, d = 0, n = 0, b = 0,
+							  lowest_real = 0, highest_fake = 0,
+							  distinguishable = 0, distinguishability_ratio = 0,
+							  euclidean_length_betas = 0, abs_deviation = 0,
+							  squared_deviation = 0, max_normed_deviation = 0,
+							  epsilon_droot_m = 0, epsilon_droot_rootd = 0,
+							  epsilon_droot_halfd = 0, epsilon_dlinear_m = 0,
+							  epsilon_dlinear_rootd = 0, epsilon_dlinear_halfd = 0)
+i <- 1
+for (result in results_list) {
+	m <- result$num_params_real
+	k <- result$num_params_fake
+	d <- m + k
+	n <- result$dataset_size
+	b <- result$beta
+	means <- result[["fit_summary"]][["summary"]][,1]
+	means_real <- means[1:m]
+	means_fake <- means[(m + 1):(length(means) - 2)]
+	all_betas <- c(means_real, means_fake)
+	lowest_real <- means_real[which.min(abs(means_real))]
+	highest_fake <- means_fake[which.max(abs(means_fake))]
+	euclidean_length_betas <- sqrt(sum(all_betas^2))
+	# Overall Performance Measures
+	abs_deviation <- sum(abs(means_real - b)) + sum(abs(means_fake))
+	squared_deviation <- sum((means_real - b)^2) + sum(means_fake^2)
+	max_normed_deviation <- max(max(abs(means_real - b)), max(abs(means_fake)))
+	distinguishable <- as.numeric(abs(lowest_real) > abs(highest_fake))
+	distinguishability_ratio <- abs(lowest_real) / abs(highest_fake)
+	# Constant Sparsity (number betas is constant)
+	#### Find the relevant nth-largest element (in magnitude):
+	mth_largest <- maxN(abs(all_betas), m)
+	sqrtd_largest <- maxN(abs(all_betas), ceiling(sqrt(d)))
+	halfd_largest <- maxN(abs(all_betas), ceiling(d/2))
+	## Thresholding
+	### d-th root
+	epsilon_droot_m <- (mth_largest/euclidean_length_betas)^(1/d)
+	epsilon_droot_rootd <- (sqrtd_largest/euclidean_length_betas)^(1/d)
+	epsilon_droot_halfd <- (halfd_largest/euclidean_length_betas)^(1/d)
+	### d-linear
+	epsilon_dlinear_m <- (d * mth_largest/euclidean_length_betas)
+	epsilon_dlinear_rootd <- (d * sqrtd_largest/euclidean_length_betas)
+	epsilon_dlinear_halfd <- (d * halfd_largest/euclidean_length_betas)
+	run_results_summary <- add_row(run_results_summary,
+								   run = i,
+								   m = m,
+								   k = k,
+								   d = d,
+								   n = n,
+								   b = b,
+								   lowest_real = lowest_real,
+								   highest_fake = highest_fake,
+								   distinguishable = distinguishable,
+								   distinguishability_ratio = distinguishability_ratio,
+								   euclidean_length_betas = euclidean_length_betas,
+								   abs_deviation = abs_deviation,
+								   squared_deviation = squared_deviation,
+								   max_normed_deviation = max_normed_deviation,
+								   epsilon_droot_m = epsilon_droot_m,
+								   epsilon_droot_rootd = epsilon_droot_rootd,
+								   epsilon_droot_halfd = epsilon_droot_halfd,
+								   epsilon_dlinear_m = epsilon_dlinear_m,
+								   epsilon_dlinear_rootd = epsilon_dlinear_rootd,
+								   epsilon_dlinear_halfd = epsilon_dlinear_halfd)
+		i <- i + 1
+}
+```
