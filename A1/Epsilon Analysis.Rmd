@@ -100,7 +100,8 @@ write_csv(run_results_summary, "Results Summary.csv")
 
 
 ```{r Plotting Epsilons as functions}
-df <- run_results_summary %>% mutate(dovern = d / n)
+df <- run_results_summary %>% mutate(dovern = d / n,
+									 moverk = m / k)
 
 ggplot(data = df, aes(x = log(dovern), y = epsilon_dlinear_halfd,
 					  color = as_factor(distinguishable))) +
@@ -137,4 +138,81 @@ ggplot(data = df, aes(x = log(dovern), y = epsilon_droot_rootd,
 	geom_point() +
 	theme_classic() +
 	geom_vline(xintercept = 0)
+
+######################### M OVER K
+
+ggplot(data = df, aes(x = log(moverk), y = epsilon_dlinear_halfd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(moverk), y = epsilon_dlinear_m,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(moverk), y = epsilon_dlinear_rootd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(moverk), y = epsilon_droot_halfd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(moverk), y = epsilon_droot_m,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(moverk), y = epsilon_droot_rootd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+######################### M OVER N
+
+ggplot(data = df, aes(x = log(m/n), y = epsilon_dlinear_halfd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(m/n), y = epsilon_dlinear_m,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(m/n), y = epsilon_dlinear_rootd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(m/n), y = epsilon_droot_halfd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(m/n), y = epsilon_droot_m,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(m/n), y = epsilon_droot_rootd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
 ```
