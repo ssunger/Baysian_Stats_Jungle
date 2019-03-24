@@ -94,4 +94,47 @@ for (result in results_list) {
 								   epsilon_dlinear_halfd = epsilon_dlinear_halfd)
 		i <- i + 1
 }
+run_results_summary <- run_results_summary %>% filter(run != 0)
+write_csv(run_results_summary, "Results Summary.csv")
+```
+
+
+```{r Plotting Epsilons as functions}
+df <- run_results_summary %>% mutate(dovern = d / n)
+
+ggplot(data = df, aes(x = log(dovern), y = epsilon_dlinear_halfd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(dovern), y = epsilon_dlinear_m,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(dovern), y = epsilon_dlinear_rootd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(dovern), y = epsilon_droot_halfd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(dovern), y = epsilon_droot_m,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
+
+ggplot(data = df, aes(x = log(dovern), y = epsilon_droot_rootd,
+					  color = as_factor(distinguishable))) +
+	geom_point() +
+	theme_classic() +
+	geom_vline(xintercept = 0)
 ```
