@@ -74,7 +74,7 @@ m <- c(1,5,10,50)
 # Noise Parameter Numbers:
 k <- c(1,10,100,1000)
 # Dataset Size:
-n <- c(10,100,1000,10000)
+n <- c(10,100)#,1000,10000)
 
 # All Ran through different Lasso Models with
 # tau = 0.1, 1, 5, 10
@@ -102,7 +102,8 @@ for (beta in b) {
 				betas <- df[[3]]
 				
 				## Create data list for stan:
-				stan_data <- list(N = N, K = ncol(x1), y = y1, X = x1)
+				stan_data <- list(N = dataset_size,
+								  K = ncol(x), y = y, X = x)
 				
 				# Run Stan
 				fit <- stan(file = "Lasso1.stan",
@@ -132,3 +133,5 @@ for (beta in b) {
 		}
 	}
 }
+
+save(results_list, file = "results_list.Rdata")
