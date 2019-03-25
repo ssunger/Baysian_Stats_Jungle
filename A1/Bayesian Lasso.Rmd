@@ -23,7 +23,7 @@ set.seed(314159) # For Pi-Day
 # Data Generating Function
 
 ```{r Data Generator}
-Generate_Dataset_BL <- function(num_predictors, num_noise, dataset_size, distribution = "Normal") {
+Generate_Dataset_BL <- function(num_predictors, num_noise, dataset_size, distribution = "Normal", fixed = 1) {
 	# Generates a dataset of length dataset_size from num_predictors predictors sampled
 	# from one of the specified distributions with preset params. Adds num_noise of 
 	# redundant dimensions to data. Returns a dataset, betas.
@@ -43,6 +43,9 @@ Generate_Dataset_BL <- function(num_predictors, num_noise, dataset_size, distrib
 	}
 	else if (distribution == "Uniform") {
 		betas <- runif(num_predictors)
+	}
+	else if (distribution == "Fixed"){
+		betas <- rep(fixed, num_predictors)
 	}
 	else {
 		stop("Invalid Distribution")
@@ -73,10 +76,10 @@ Generate_Dataset_BL <- function(num_predictors, num_noise, dataset_size, distrib
 	combined_x <- bind_cols(real_x_df, noise_x_df)
 	names(combined_x) <- paste0('x', 1:(ncol(combined_x)))
 	
-	
 	# Return
 	return(list(combined_x, noisy_y_df, betas))
 }
+
 ```
 
 
