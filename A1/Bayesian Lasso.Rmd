@@ -100,6 +100,8 @@ fit1 <- stan(file = "Lasso1.stan",
 			 	y = y1,
 			 	X = x1
 			 ))
+
+
 ```
 
 ```{r Evaluate fit1}
@@ -140,4 +142,185 @@ mcmc_areas(posterior2,
            pars = betas,
            prob = 0.8)
 print(fit2)
+```
+
+
+```{r, eval = T, echo= F}
+load("results_list.Rdata")
+
+res <- read_csv("Results Summary.csv")
+
+library(ggplot2)
+sift <- res %>% filter(squared_deviation >= mean(res$squared_deviation))
+sift
+ggplot(res, aes(x = d, y = epsilon_droot_m, color = m )) + geom_point()
+install.packages("ggpubr")
+library(ggpubr)
+mean(res$squared_deviation)
+mean(res$max_normed_deviation)
+
+res$epsilon_dlinear_halfd
+
+colnames(res)
+
+x_l <-   xlab("Log Dimensions")
+
+#plot 1
+plot_epsilon_droot_m <- ggplot(res, aes(x = log(d), y = epsilon_droot_m, color = m )) + geom_point() +  x_l + ylab("root m e") + expand_limits(y = 0)
+
+#plot 2
+plot_epsilon_droot_rootd <- ggplot(res, aes(x = log(d), y = epsilon_droot_rootd, color = m )) + geom_point() +  x_l + ylab("root root e")
+
+#plot 3
+plot_epsilon_droot_halfd <- ggplot(res, aes(x = log(d), y = epsilon_droot_halfd, color = m )) + geom_point() +  x_l + ylab("root halfed e") + expand_limits(y = 0)
+
+#plot 4
+plot_epsilon_dlinear_m <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_m, color = m )) + geom_point() +  x_l + ylab("Linear m e")
+
+#plot 5
+plot_epsilon_dlinear_rootd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_rootd, color = m )) + geom_point() +  x_l + ylab("Linear root e")
+
+#plot 6
+plot_epsilon_dlinear_halfd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_halfd, color = m )) + geom_point() +  x_l + ylab("Linear halfed e")
+
+ggarrange(plot_epsilon_droot_m, plot_epsilon_droot_rootd, plot_epsilon_droot_halfd , plot_epsilon_dlinear_m, plot_epsilon_dlinear_rootd, plot_epsilon_dlinear_halfd,
+          labels = c("A", "B", "C", "D", "E", "F"),
+          ncol = 3, nrow = 2)
+
+
+```
+
+
+
+```{r, echo = F, eval = T}
+
+x_l <-   xlab("Log Dimensions")
+
+res$"m/k" <- res$m/res$k
+
+#plot 1
+plot_epsilon_droot_m <- ggplot(res, aes(x = log(d), y = epsilon_droot_m, color = m/k )) + geom_point() +  x_l + ylab("root m epsilon") + expand_limits(y = 0)
+
+#plot 2
+plot_epsilon_droot_rootd <- ggplot(res, aes(x = log(d), y = epsilon_droot_rootd, color = m/k )) + geom_point() +  x_l + ylab("root root epsilon")
+
+#plot 3
+plot_epsilon_droot_halfd <- ggplot(res, aes(x = log(d), y = epsilon_droot_halfd, color = m/k )) + geom_point() +  x_l + ylab("root halfed epsilon") + expand_limits(y = 0)
+
+#plot 4
+plot_epsilon_dlinear_m <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_m, color = m/k )) + geom_point() +  x_l + ylab("Linear m epsilon") 
+
+#plot 5
+plot_epsilon_dlinear_rootd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_rootd, color = m/k )) + geom_point() +  x_l + ylab("Linear root epsilon")
+
+#plot 6
+plot_epsilon_dlinear_halfd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_halfd, color = m/k )) + geom_point() +  x_l + ylab("Linear halfed epsilon")
+
+ggarrange(plot_epsilon_droot_m, plot_epsilon_droot_rootd, plot_epsilon_droot_halfd , plot_epsilon_dlinear_m, plot_epsilon_dlinear_rootd, plot_epsilon_dlinear_halfd,
+          labels = c("A", "B", "C", "D", "E", "F"),
+          ncol = 3, nrow = 2)
+```
+
+```{r, echo = F, eval = T}
+
+#plot 1
+plot_epsilon_droot_m <- ggplot(res, aes(x = log(d), y = epsilon_droot_m, color = log(m/k) )) + geom_point() +  x_l + ylab("root m epsilon") + expand_limits(y = 0)
+
+#plot 2
+plot_epsilon_droot_rootd <- ggplot(res, aes(x = log(d), y = epsilon_droot_rootd, color = log(m/k) )) + geom_point() +  x_l + ylab("root root epsilon") 
+
+#plot 3
+plot_epsilon_droot_halfd <- ggplot(res, aes(x = log(d), y = epsilon_droot_halfd, color = log(m/k) )) + geom_point() +  x_l + ylab("root halfed epsilon") + expand_limits(y = 0)
+
+#plot 4
+plot_epsilon_dlinear_m <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_m, color = log(m/k) )) + geom_point() +  x_l + ylab("Linear m epsilon") + scale_y_continuous(limits = c(0,150))
+
+#plot 5
+plot_epsilon_dlinear_rootd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_rootd, color = log(m/k) )) + geom_point() +  x_l + ylab("Linear root epsilon")+ scale_y_continuous(limits = c(0,150))
+
+#plot 6
+plot_epsilon_dlinear_halfd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_halfd, color = log(m/k))) + geom_point() +  x_l + ylab("Linear halfed epsilon")+ scale_y_continuous(limits = c(0,150))
+
+ggarrange(plot_epsilon_droot_m, plot_epsilon_droot_rootd, plot_epsilon_droot_halfd , plot_epsilon_dlinear_m, plot_epsilon_dlinear_rootd, plot_epsilon_dlinear_halfd,
+          labels = c("A", "B", "C", "D", "E", "F"),
+          ncol = 3, nrow = 2)
+
+```
+
+
+```{r, echo = F, eval = T}
+
+x_l <-   xlab("Log Dimensions")
+
+res$"m/k" <- res$m/res$k
+res$"b Values" <- as.factor(res$b)
+
+p_type <- geom_point( alpha = 0.3)
+l_n <- labs(color='b') 
+#plot 1
+plot_epsilon_droot_m <- ggplot(res, aes(x = log(d), y = epsilon_droot_m, color = as.factor(b) )) + p_type +  x_l + ylab("root m epsilon")  + expand_limits(y = 0)  + l_n 
+
+
+#plot 2
+plot_epsilon_droot_rootd <- ggplot(res, aes(x = log(d), y = epsilon_droot_rootd, color = as.factor(b))) + p_type  +  x_l + ylab("root root epsilon") + l_n
+
+#plot 3
+plot_epsilon_droot_halfd <- ggplot(res, aes(x = log(d), y = epsilon_droot_halfd, color = as.factor(b) )) + p_type  +  x_l + ylab("root halfed epsilon") + expand_limits(y = 0)+ l_n
+
+#plot 4
+plot_epsilon_dlinear_m <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_m, color = as.factor(b) )) + p_type  +  x_l + ylab("Linear m epsilon") + scale_y_continuous(limits = c(0,150))+ l_n
+
+#plot 5
+plot_epsilon_dlinear_rootd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_rootd, color =  as.factor(b) )) + p_type  +  x_l + ylab("Linear root epsilon") + scale_y_continuous(limits = c(0,150))+ l_n
+
+#plot 6
+plot_epsilon_dlinear_halfd <- ggplot(res, aes(x = log(d), y = epsilon_dlinear_halfd, color = as.factor(b) )) + p_type  +  x_l + ylab("Linear halfed epsilon") + scale_y_continuous(limits = c(0,150))+ l_n
+
+ggarrange(plot_epsilon_droot_m, plot_epsilon_droot_rootd, plot_epsilon_droot_halfd , plot_epsilon_dlinear_m, plot_epsilon_dlinear_rootd, plot_epsilon_dlinear_halfd,
+          labels = c("A", "B", "C", "D", "E", "F"),
+          ncol = 3, nrow = 2)
+```
+
+```{r, echo = F, eval = T}
+
+x_l <-   xlab("Log Dimensions")
+
+res$distinguishable
+l_n <- labs(color='distin') 
+#plot 1
+plot_abs_deviation <- ggplot(res, aes(x = log(d), y = log(abs_deviation), color = as.factor(distinguishable))) + geom_point() +  x_l + ylab("log abs dev") + expand_limits(y = 0) + l_n
+
+#plot 2
+plot_squared_deviation <- ggplot(res, aes(x = log(d), y = log(squared_deviation), color = as.factor(distinguishable) )) + geom_point() +  x_l + ylab("log sqr dev")  + l_n
+
+#plot 3
+plot_max_normed_deviation <- ggplot(res, aes(x = log(d), y = log(max_normed_deviation), color = as.factor(distinguishable) )) + geom_point() +  x_l + ylab("log max normed dev") + expand_limits(y = 0) + l_n
+
+
+
+ggarrange(plot_abs_deviation, plot_abs_deviation, plot_max_normed_deviation,
+          labels = c("A", "B", "C", "D", "E", "F"),
+          ncol = 3, nrow = 1)
+```
+
+```{r, echo = F, eval = T}
+
+x_l <-   xlab("Log Dimensions")
+
+res$max_normed_deviation
+
+#plot 1
+plot_abs_deviation <- ggplot(res, aes(x = log(d), y = log(abs_deviation), color = log(m/k) )) + geom_point() +  x_l + ylab("log abs dev") + expand_limits(y = 0)
+
+#plot 2
+plot_squared_deviation <- ggplot(res, aes(x = log(d), y = log(squared_deviation), color = log(m/k) )) + geom_point() +  x_l + ylab("log sqr dev") 
+
+#plot 3
+plot_max_normed_deviation <- ggplot(res, aes(x = log(d), y = log(max_normed_deviation), color = log(m/k) )) + geom_point() +  x_l + ylab("log max normed dev") + expand_limits(y = 0)
+
+
+
+ggarrange(plot_abs_deviation, plot_abs_deviation, plot_max_normed_deviation,
+          labels = c("A", "B", "C", "D", "E", "F"),
+          ncol = 3, nrow = 1)
 ```
