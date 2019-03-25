@@ -18,6 +18,10 @@ library(bayesplot) # same
 library(coda) # bayesian diagnostics
 library(here) # working on the project together
 set.seed(314159) # For Pi-Day
+
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
+
 ```
 
 # Data Generating Function
@@ -87,7 +91,7 @@ Generate_Dataset_BL <- function(num_predictors, num_noise, dataset_size, distrib
 # Generate a simple dataset of size (5,10,1000)
 N = 1000
 
-dataset1 <- Generate_Dataset_BL(5,10,N)
+dataset1 <- Generate_Dataset_BL(5,10,N) # 5 real param, 10 noise param
 x1 <- dataset1[[1]]
 y1 <- dataset1[[2]]$V1
 betas1 <- dataset1[[3]]
@@ -145,6 +149,40 @@ mcmc_areas(posterior2,
            pars = betas,
            prob = 0.8)
 print(fit2)
+```
+
+```{r Lasso Trial 3}
+N = 100
+
+dataset3 <- Generate_Dataset_BL(10, 140, N)
+x3 <- dataset3[[1]]
+y3 <- dataset3[[2]]$V1
+betas3 <- dataset3[[3]]
+
+# Fit Stan Model
+fit3 <- stan(file = "Lasso1.stan",
+			 data = list(N = N,
+			 			K = ncol(x3),
+			 			y = y3,
+			 			X = x3),
+			 chains = 4,
+			 iter = 10000,
+			 warmup = 2000,
+			 control = list(adapt_delta = 0.99))
+```
+
+```{r}
+check_hmc_diagnostics(fit3)
+
+posterior3 <- extract(fit3, inc_warmup = TRUE, permuted = FALSE)
+
+color_scheme_set("red")
+betas <- paste0('beta[', 1:105,']')
+
+mcmc_areas(posterior3,
+           pars = betas,
+           prob = 0.8)
+print(fit3)
 ```
 
 
