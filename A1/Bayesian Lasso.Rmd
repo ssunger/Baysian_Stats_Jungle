@@ -152,9 +152,9 @@ print(fit2)
 ```
 
 ```{r Lasso Trial 3}
-N = 100
+N = 20
 
-dataset3 <- Generate_Dataset_BL(10, 140, N)
+dataset3 <- Generate_Dataset_BL(5, 45, N)
 x3 <- dataset3[[1]]
 y3 <- dataset3[[2]]$V1
 betas3 <- dataset3[[3]]
@@ -166,23 +166,26 @@ fit3 <- stan(file = "Lasso1.stan",
 			 			y = y3,
 			 			X = x3),
 			 chains = 4,
-			 iter = 10000,
+			 iter = 5000,
 			 warmup = 2000,
-			 control = list(adapt_delta = 0.99))
+			 control = list(adapt_delta = 0.999999,
+			 			   max_treedepth = 15))
 ```
 
 ```{r}
 check_hmc_diagnostics(fit3)
 
-posterior3 <- extract(fit3, inc_warmup = TRUE, permuted = FALSE)
+posterior3 <- extract(fit3, inc_warmup = FALSE, permuted = FALSE)
 
 color_scheme_set("red")
-betas <- paste0('beta[', 1:105,']')
+betas <- paste0('beta[', 1:50,']')
 
 mcmc_areas(posterior3,
            pars = betas,
            prob = 0.8)
 print(fit3)
+
+pairs(fit3)
 ```
 
 
