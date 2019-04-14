@@ -113,6 +113,21 @@ fit1 <- stan(file = "Lasso1.stan",
 
 ```{r Evaluate fit1}
 check_hmc_diagnostics(fit1)
+
+posterior1 <- extract(fit1, inc_warmup = TRUE, permuted = FALSE)
+
+color_scheme_set("red")
+betas <- paste0('beta[', 1:15,']')
+
+post_plot_fit1 <- mcmc_areas(posterior1,
+           pars = betas,
+           prob = 0.8) + ggtitle("Posterior distributions of Fit1",
+                      "with medians and 80% intervals")
+post_plot_fit1
+ggsave("Plots/post_plot_fit1.jpg")
+
+print(fit1)
+
 ```
 
 
@@ -143,11 +158,14 @@ check_hmc_diagnostics(fit2)
 posterior2 <- extract(fit2, inc_warmup = TRUE, permuted = FALSE)
 
 color_scheme_set("red")
-betas <- paste0('beta[', 1:105,']')
+betas <- paste0('beta[', c(1:5, 10, 17, 42, 76, 104),']')
 
-mcmc_areas(posterior2,
+post_plot_fit2 <- mcmc_areas(posterior2,
            pars = betas,
-           prob = 0.8)
+           prob = 0.8) + ggtitle("Posterior distributions of Fit2",
+                      "with medians and 80% intervals")
+post_plot_fit2
+ggsave("Plots/post_plot_fit2.jpg")
 print(fit2)
 ```
 
@@ -175,30 +193,32 @@ fit3 <- stan(file = "Lasso1.stan",
 ```{r}
 check_hmc_diagnostics(fit3)
 
-posterior3 <- extract(fit3, inc_warmup = FALSE, permuted = FALSE)
+posterior3 <- rstan::extract(fit3, inc_warmup = FALSE, permuted = FALSE)
 
 color_scheme_set("red")
-betas <- paste0('beta[', 1:50,']')
+betas <- paste0('beta[', c(1:5,10,25,37, 42, 50),']')
 
-mcmc_areas(posterior3,
+post_plot_fit3 <- mcmc_areas(posterior3,
            pars = betas,
-           prob = 0.8)
+           prob = 0.8) + ggtitle("Posterior distributions of Fit3",
+                      "with medians and 80% intervals")
+post_plot_fit3
+ggsave("Plots/post_plot_fit3.jpg")
+
 print(fit3)
 
-pairs(fit3)
 ```
 
 
 ```{r, eval = T, echo= F}
 load("results_list.Rdata")
+res <- read.csv("Results Summary.csv")
 
-res <- read_csv("Results Summary.csv")
+library(tidyverse)
 
-library(ggplot2)
 sift <- res %>% filter(squared_deviation >= mean(res$squared_deviation))
 sift
 ggplot(res, aes(x = d, y = epsilon_droot_m, color = m )) + geom_point()
-install.packages("ggpubr")
 library(ggpubr)
 mean(res$squared_deviation)
 mean(res$max_normed_deviation)
@@ -366,5 +386,5 @@ plot_max_normed_deviation <- ggplot(res, aes(x = log(d), y = log(max_normed_devi
 
 ggarrange(plot_abs_deviation, plot_abs_deviation, plot_max_normed_deviation,
           labels = c("A", "B", "C", "D", "E", "F"),
-          ncol = 3, nrow = 1)
+          ncol = 2, nrow = 2)
 ```
