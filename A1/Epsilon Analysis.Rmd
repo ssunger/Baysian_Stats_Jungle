@@ -108,18 +108,21 @@ ggplot(data = df, aes(x = log(dovern), y = epsilon_dlinear_halfd,
 	geom_point() +
 	theme_classic() +
 	geom_vline(xintercept = 0)
+ggsave("Plots/DoverN_EpsDLinHalf.jpg")
 
 ggplot(data = df, aes(x = log(dovern), y = epsilon_dlinear_m,
 					  color = as_factor(distinguishable))) +
 	geom_point() +
 	theme_classic() +
 	geom_vline(xintercept = 0)
+ggsave("Plots/DoverN_EpsDLinM.jpg")
 
 ggplot(data = df, aes(x = log(dovern), y = epsilon_dlinear_rootd,
 					  color = as_factor(distinguishable))) +
 	geom_point() +
 	theme_classic() +
 	geom_vline(xintercept = 0)
+ggsave("Plots/DoverN_EpsDLinRoot.jpg")
 
 ggplot(data = df, aes(x = log(dovern), y = epsilon_droot_halfd,
 					  color = as_factor(distinguishable))) +
