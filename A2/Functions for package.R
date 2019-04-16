@@ -1,40 +1,13 @@
----
-title: "Model Checking stuff"
-author: "Michal Malyska"
-output: html_document
----
-
-```{r setup and library load}
 library(tidyverse)
 library(reshape2)
-```
 
-
-```{r Function Def}
+# Convert Parameters to the new values
 convert_param <- function(alpha) {
 	new_alpha <- (-1)/(alpha) + (alpha)^(3)
 	return(new_alpha)
 }
-```
 
-
-```{r Testing}
-alpha = seq(from = 0.1, to = 10, length.out = 50)
-beta = seq(from = 0.1, to = 10, length.out = 50)
-
-test_data <- expand.grid(alpha, beta)
-
-test_data <- test_data %>% 
-	mutate(alpha_transf = convert_param(Var1),
-		   beta_transf = convert_param(Var2),
-		   difference = alpha_transf - beta_transf,
-		   sum = alpha_transf + beta_transf ) %>%
-	rename(alpha = Var1,
-		   beta = Var2)
-```
-
-
-```{r}
+# Estimate the beta parameters from data
 estBetaParams <- function(x) {
 	mu = mean(x)
 	var = var(x)
@@ -42,10 +15,8 @@ estBetaParams <- function(x) {
 	beta <- alpha * (1 / mu - 1)
 	return(params = list(alpha = alpha, beta = beta))
 }
-```
 
-```{r Compute the summary and plot the histogram from an inla result}
-
+# Create Ouput
 monkey_hammer <- function(inla_result){
 	# Checks that the PIT's were computed:
 	if (length(inla_result$cpo$pit) == 0) {
@@ -74,30 +45,29 @@ monkey_hammer <- function(inla_result){
 	beta_diagn <- ggplot(data = plotting_data, mapping = aes(x = value, fill = variable)) +
 		geom_density(alpha = 0.25) +
 		theme_minimal() +
+		scale_x_continuous(limits = c(0,1)) +
 		labs(title = "Beta fit diagnostics")
 	
 	PIT_hist <- ggplot(data = tibble(observed = x)) +
 		aes(x = observed) +
 		geom_histogram(alpha = 0.75, bins = ceiling(1 + 3.322 * log(length(x)))) +
 		theme_minimal() +
+		scale_x_continuous(limits = c(0,1)) +
 		labs(title = "PIT Histogram")
 	
 	if (param_diff < 0) {
-		print("There might be some left bias")
+		print("There might be some right bias")
 	}
 	else if (param_diff > 0) {
-		print("There might be some right bias")
+		print("There might be some left bias")
 	}
 	
 	if (param_sum < 0) {
-		print("There might be some overdispersion")
+		print("There might be some under-dispersion")
 	}
 	else if (param_sum > 0) {
-		print("There might be some underdispersion")
+		print("There might be some over-dispersion")
 	}
 	
 	return(list(difference = param_diff, sum = param_sum, PIT = PIT_hist, beta_diagnostic_plot = beta_diagn))
 }
-```
-
-
