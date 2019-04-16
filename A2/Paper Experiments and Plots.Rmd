@@ -1,0 +1,355 @@
+---
+title: "Paper Experiments"
+author: "Michal Malyska"
+date: "15/04/2019"
+output: html_document
+---
+
+```{r Setup and load}
+library(tidyverse)
+library(reshape2)
+library(gridExtra)
+source("Functions for package.R")
+set.seed(100189)
+```
+
+```{r plotting the function}
+
+alpha <- c(seq(from = 0.05, to = 1, length.out = 100), seq(from = 1, to = 2, length.out = 1000))
+
+transformed_alpha <- convert_param(alpha)
+plot_dat <- tibble(alpha = alpha, result = transformed_alpha)
+
+p1 <- ggplot(data = plot_dat) +
+	aes(x = alpha, y = result) +
+	geom_point(se = FALSE) +
+	theme_minimal() +
+	labs(title = "Parameter Transformation Function")
+ggsave("Param_Trans.png", plot = p1)
+```
+
+
+```{r Ideal Cases}
+# Uniform:
+a <- NULL
+x <- runif(5000)
+a$cpo$pit <- x
+result_uniform <- monkey_hammer(a)
+ggsave(plot = result_uniform$PIT, "Uniform_PIT.png")
+ggsave(plot = result_uniform$beta_diagnostic_plot, "Uniform_Beta.png")
+ggsave("Uniform.png", arrangeGrob(result_uniform$PIT, result_uniform$beta_diagnostic_plot, nrow = 2))
+
+
+
+# Smile
+x <- rbeta(5000, 2,2)
+a$cpo$pit <- x
+result_u <- monkey_hammer(a)
+ggsave(plot = result_u$PIT, "Smile_PIT.png")
+ggsave(plot = result_u$beta_diagnostic_plot, "Smile_Beta.png")
+ggsave("Smile.png", arrangeGrob(result_u$PIT, result_u$beta_diagnostic_plot, nrow = 2))
+
+
+
+# Frown
+x <- rbeta(5000, 0.5,0.5)
+a$cpo$pit <- x
+result_frown <- monkey_hammer(a)
+ggsave(plot = result_frown$PIT, "Frown_PIT.png")
+ggsave(plot = result_frown$beta_diagnostic_plot, "Frown_Beta.png")
+ggsave("Frown.png", arrangeGrob(result_frown$PIT, result_frown$beta_diagnostic_plot, nrow = 2))
+
+
+
+# Left Bias
+x <- rbeta(5000, 1,2)
+a$cpo$pit <- x
+result_leftb <- monkey_hammer(a)
+ggsave(plot = result_leftb$PIT, "Left_PIT.png")
+ggsave(plot = result_leftb$beta_diagnostic_plot, "Left_Beta.png")
+ggsave("Left.png", arrangeGrob(result_leftb$PIT, result_leftb$beta_diagnostic_plot, nrow = 2))
+
+
+
+# Right Bias
+x <- rbeta(5000, 2,1)
+a$cpo$pit <- x
+result_rightb <- monkey_hammer(a)
+ggsave(plot = result_rightb$PIT, "Right_PIT.png")
+ggsave(plot = result_rightb$beta_diagnostic_plot, "Right_Beta.png")
+ggsave("Right.png", arrangeGrob(result_rightb$PIT, result_rightb$beta_diagnostic_plot, nrow = 2))
+
+result_uniform$sum
+result_uniform$difference
+result_u$sum
+result_u$difference
+result_frown$sum
+result_frown$difference
+result_leftb$sum
+result_leftb$difference
+result_rightb$sum
+result_rightb$difference
+
+```
+
+
+```{r Breaking the shit}
+a <- NULL
+x <- rbeta(5000, 5, 0.001)
+a$cpo$pit <- x
+result_break2 <- monkey_hammer(a)
+ggsave(plot = result_break2$PIT, "Break2_PIT.png")
+ggsave(plot = result_break2$beta_diagnostic_plot, "Break2_Beta.png")
+ggsave("Break2.png", arrangeGrob(result_break2$PIT, result_break2$beta_diagnostic_plot, nrow = 2))
+
+result_break2$difference
+result_break2$sum
+
+x <- rbeta(5000, 5, 0.01)
+a$cpo$pit <- x
+result_break3 <- monkey_hammer(a)
+ggsave(plot = result_break3$PIT, "Break3_PIT.png")
+ggsave(plot = result_break3$beta_diagnostic_plot, "Break3_Beta.png")
+ggsave("Break3.png", arrangeGrob(result_break3$PIT, result_break3$beta_diagnostic_plot, nrow = 2))
+
+result_break3$difference
+result_break3$sum
+```
+
+
+```{r INLA setups}
+##load the data set
+data(Zambia)
+
+##load map
+g = system.file("demodata/zambia.graph", package = "INLA")
+
+# add one column for the unstructured spatial effect
+Zambia$distr.unstruct  =  Zambia$district
+
+##define formulas for the three models
+##MOD1
+formula.mod1 = hazstd ~  agc +
+	f(
+		district,
+		model = "besag",
+		graph.file = g,
+		param = c(1, 0.01)
+	) +
+	f(distr.unstruct, model = "iid", param = c(1, 0.01)) +
+	edu1 + edu2 + tpr + sex + bmi
+
+##MOD2
+formula.mod2 = hazstd ~ f(agc, model = "rw2") +
+	f(
+		district,
+		model = "besag",
+		graph.file = g,
+		param = c(1, 0.01)
+	) +
+	f(distr.unstruct, model = "iid", param = c(1, 0.01)) +
+	edu1 + edu2 + tpr + sex + bmi
+
+##MOD3
+formula.mod3 = hazstd ~ f(agc, model = "rw2") +
+	f(
+		district,
+		bmi,
+		model = "besag",
+		graph.file = g,
+		param = c(1, 0.01),
+		constr = FALSE
+	) +
+	edu1 + edu2 + tpr + sex
+
+##run the three models
+mod1  =  inla(
+	formula.mod1,
+	data = Zambia,
+	control.family = list(initial = 1),
+	control.inla = list(h = 1e-4),
+	control.compute = list(cpo = TRUE)
+)
+
+mod2  =  inla(
+	formula.mod2,
+	data = Zambia,
+	control.family = list(initial = 1),
+	control.inla = list(h = 1e-4),
+	control.compute = list(cpo = TRUE)
+)
+
+mod3  =  inla(
+	formula.mod3,
+	data = Zambia,
+	control.family = list(initial = 1),
+	control.inla = list(h = 1e-4),
+	control.compute = list(cpo = TRUE)
+)
+
+
+## JOINT MODELS AS LGMS
+#Toy example
+N = 100 #number of patients
+N_i = round(runif(N, min = 5, max = 10)) #Number of longitudinal observations per person
+#Generate time-dependent exponential event times with iid shared random effects term
+#Survival component
+u_i = 1 + rnorm(N, mean = 0, sd = 1) #iid random effect
+coeff = 0.5 #share parameter
+lambda = exp(coeff * u_i)
+s_i = rexp(N, rate = lambda) #exponential survival times
+#library(purrr)
+#c_i=rbernoulli(N,p=0.9)#censoring
+c_i = rep(1, N) #no censoring
+
+
+#Longitudinal component
+t = rep(NA, sum(N_i))
+ID = rep(NA, sum(N_i))
+a = rep(NA, sum(N_i))
+t[1:N_i[1]] = runif(N_i[1], min = 0, max = s_i[1]) # observation times
+ID[1:N_i[1]] = 1
+a[1:N_i[1]] = u_i[1]
+
+for (i in 2:N) {
+	t[(sum(N_i[1:(i - 1)]) + 1):(sum(N_i[1:(i - 1)]) + N_i[i])] = runif(N_i[i], min =
+																			0, max = s_i[i]) #observation times
+	ID[(sum(N_i[1:(i - 1)]) + 1):(sum(N_i[1:(i - 1)]) + N_i[i])] = i #person ID
+	a[(sum(N_i[1:(i - 1)]) + 1):(sum(N_i[1:(i - 1)]) + N_i[i])] = u_i[i] #iid random effect
+}
+y = rnorm(sum(N_i), mean = (t ^ 2 + a), sd = 0.1) #longitudinal response with N_i[i] observations per person and a t^2 trend
+plot(t, y) #view longitudional data
+
+#Set-up for joint model
+ng = length(y)
+ns = length(s_i)
+linear.covariate <-
+	data.frame(
+		muJ = as.factor(c(rep(1, ng), rep(2, ns))),
+		stime = c(t, rep(0, ns)),
+		ltime = c(rep(0, ng), s_i)
+	)
+
+random.covariate <- list(
+	IDs = c(rep(NA, ng), 1:N),
+	IDl = c(ID, rep(NA, ns)),
+	V1 = c(t, rep(NA, ns))
+)
+
+
+#Pad the covariates with NA for random effects
+joint.data <- c(linear.covariate, random.covariate)
+Yjoint = list(c(y, rep(NA, ns)), inla.surv(time = c(rep(NA, ng), s_i), event =
+										   	c(rep(NA, ng), c_i)))
+joint.data$Y <- Yjoint
+
+#model with INLA
+formulaJ = Y ~ muJ + f(
+	inla.group(V1, n = 50),
+	model = "rw2",
+	scale.model = TRUE,
+	hyper = list(prec = list(
+		prior = "pc.prec", param = c(1, 0.01)
+	))
+) +
+	f(IDl, model = "iid", hyper = list(prec = list(
+		prior = "pc.prec", param = c(1, 0.01)
+	))) + f(IDs, copy = "IDl", fixed = FALSE)
+mod4 = inla(
+	formulaJ,
+	family = c("gaussian", "exponentialsurv"),
+	data = joint.data,
+	control.compute = list(dic = TRUE, config = TRUE, cpo = TRUE)
+)
+#non-linear trend only
+mod5 = inla(
+	Y ~ muJ + f(
+		inla.group(V1, n = 50),
+		model = "rw2",
+		scale.model = TRUE,
+		hyper = list(prec = list(
+			prior = "pc.prec", param = c(1, 0.01)
+		))
+	),
+	family = c("gaussian", "exponentialsurv"),
+	data = joint.data,
+	control.compute = list(dic = TRUE, config = TRUE,cpo = TRUE)
+)
+
+
+data(Seeds)
+
+mod6 = inla(
+	r ~ x1 + x2 + f(plate, model = "iid",
+					param = c(.5, .0164)),
+	data = Seeds,
+	family = "binomial",
+	Ntrials = n,
+	control.compute = list(dic = TRUE, config = TRUE,cpo = TRUE)
+)
+```
+
+
+```{r INLA results}
+result_inla1 <- monkey_hammer(result1)
+ggsave(plot = result_inla1$PIT, "INLA1_PIT.png")
+ggsave(plot = result_inla1$beta_diagnostic_plot, "INLA1_Beta.png")
+ggsave("INLA1.png", arrangeGrob(result_inla1$PIT, result_inla1$beta_diagnostic_plot, nrow = 2))
+print("INLA1")
+result_inla1$sum
+result_inla1$difference
+
+result_inla2 <- monkey_hammer(mod1)
+ggsave(plot = result_inla2$PIT, "INLA2_PIT.png")
+ggsave(plot = result_inla2$beta_diagnostic_plot, "INLA2_Beta.png")
+ggsave("INLA2.png", arrangeGrob(result_inla2$PIT, result_inla2$beta_diagnostic_plot, nrow = 2))
+
+print("INLA2")
+result_inla2$sum
+result_inla2$difference
+
+result_inla3 <- monkey_hammer(mod2)
+ggsave(plot = result_inla3$PIT, "INLA3_PIT.png")
+ggsave(plot = result_inla3$beta_diagnostic_plot, "INLA3_Beta.png")
+ggsave("INLA3.png", arrangeGrob(result_inla3$PIT, result_inla3$beta_diagnostic_plot, nrow = 2))
+
+print("INLA3")
+result_inla3$sum
+result_inla3$difference
+
+result_inla4 <- monkey_hammer(mod3)
+ggsave(plot = result_inla4$PIT, "INLA4_PIT.png")
+ggsave(plot = result_inla4$beta_diagnostic_plot, "INLA4_Beta.png")
+ggsave("INLA4.png", arrangeGrob(result_inla4$PIT, result_inla4$beta_diagnostic_plot, nrow = 2))
+
+print("INLA4")
+result_inla4$sum
+result_inla4$difference
+
+result_inla5 <- monkey_hammer(mod4)
+ggsave(plot = result_inla5$PIT, "INLA5_PIT.png")
+ggsave(plot = result_inla5$beta_diagnostic_plot, "INLA5_Beta.png")
+ggsave("INLA5.png", arrangeGrob(result_inla5$PIT, result_inla5$beta_diagnostic_plot, nrow = 2))
+
+print("INLA5")
+result_inla5$sum
+result_inla5$difference
+
+result_inla6 <- monkey_hammer(mod5)
+ggsave(plot = result_inla6$PIT, "INLA6_PIT.png")
+ggsave(plot = result_inla6$beta_diagnostic_plot, "INLA6_Beta.png")
+ggsave("INLA6.png", arrangeGrob(result_inla6$PIT, result_inla6$beta_diagnostic_plot, nrow = 2))
+
+print("INLA6")
+result_inla6$sum
+result_inla6$difference
+
+result_inla7 <- monkey_hammer(mod6)
+ggsave(plot = result_inla7$PIT, "INLA7_PIT.png")
+ggsave(plot = result_inla7$beta_diagnostic_plot, "INLA7_Beta.png")
+ggsave("INLA7.png", arrangeGrob(result_inla7$PIT, result_inla7$beta_diagnostic_plot, nrow = 2))
+
+print("INLA7")
+result_inla7$sum
+result_inla7$difference
+```
